@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Encuesta de Tenis</title>
+    <style>
+        /* General */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-image: url('cancha.jpg'); /* Ruta de la imagen de fondo */
+            background-size: cover; /* Asegura que la imagen cubra toda la pantalla */
+            background-position: center; /* Centra la imagen de fondo */
+            background-repeat: no-repeat; /* Evita que la imagen se repita */
+            color: #1a1a1a;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            }
+        h1 {
+            font-size: 2.5rem;
+            color: #000000;
+            margin-bottom: 20px;
+        }
+        h2 {
+            font-size: 1.5rem;
+            color: #37474f;
+            margin-bottom: 15px;
+        }
+
+        /* Contenedor principal */
+        #quizContainer, #resultado {
+            max-width: 500px;
+            width: 90%;
+            background-color: #ffffff;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        #quizContainer {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        #resultado {
+            margin-top: 20px;
+            display: none; /* Por defecto oculto */
+        }
+
+        /* Botones */
+        button {
+            background-color: #00796b;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin: 0 10px; /* Espaciado horizontal */
+        }
+        button:hover {
+            background-color: #005a4f;
+        }
+
+        /* Opciones */
+        #opciones {
+            display: flex; /* Configuración horizontal */
+            justify-content: center; /* Centrar botones */
+            gap: 15px; /* Espaciado entre botones */
+            margin-top: 20px;
+        }
+
+        /* Imágenes */
+        img {
+            max-width: 100%;
+            margin-top: 20px;
+            border: 2px solid #00796b;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+        #sorteoImagen, #imagenRaqueta {
+            width: 300px;
+            height: 300px;
+            object-fit: cover;
+        }
+
+        /* Respuestas */
+        .respuestas {
+            white-space: pre-line;
+            text-align: left;
+            margin-top: 20px;
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        /* Mensaje destacado */
+        .mensaje {
+            font-weight: bold;
+            color: #00796b;
+            animation: titilar 1s infinite;
+            margin-top: 10px;
+        }
+        @keyframes titilar {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        /* Premio container */
+        #premioContainer {
+            margin-top: 20px;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Encuesta de Tenis</h1>
+    <div id="quizContainer">
+        <div id="pregunta"></div>
+        <div id="opciones"></div>
+    </div>
+    <div id="resultado">
+        <p id="respuestaFinal" class="respuestas"></p>
+        <p id="mensajeResultado" class="mensaje hidden"></p>
+        <div id="premioContainer" class="hidden">
+            <button onclick="mostrarSorteo()">Presione para un premio</button>
+            <div id="sorteoContainer" class="hidden">
+                <img id="sorteoImagen" src="" alt="Sorteo de premio">
+            </div>
+        </div>
+        <p><strong>Por favor, haga una captura de pantalla de esto y envíesela al administrador. ¡Muchas gracias por su participación!</strong></p>
+    </div>
+
+    <script>
+        const preguntas = [
+            { texto: "¿A usted le gusta el tenis?", opciones: ["Sí", "No"] },
+            { texto: "¿Tiene disponibilidad esta tarde?", opciones: ["Sí", "No"] },
+            { texto: "¿Con quién le gustaría jugar?", opciones: ["Sergio, sí o sí", "Andá pallá bobo"] },
+            { texto: "¿Tiene usted raqueta?", opciones: ["Sí", "No"] },
+        ];
+        const respuestas = [];
+        let indicePregunta = 0;
+
+        // Lista de imágenes para el sorteo
+        const imagenesSorteo = [
+            "imagen1.jpg", "imagen2.jpg", "imagen3.jpg", "imagen4.jpg", "babolat.jpg"
+        ];
+        let sorteoInterval;
+
+        function mostrarPregunta() {
+            const preguntaActual = preguntas[indicePregunta];
+            const preguntaDiv = document.getElementById("pregunta");
+            const opcionesDiv = document.getElementById("opciones");
+
+            preguntaDiv.innerHTML = `<h2>${preguntaActual.texto}</h2>`;
+            opcionesDiv.innerHTML = "";
+
+            preguntaActual.opciones.forEach(opcion => {
+                const botonOpcion = document.createElement("button");
+                botonOpcion.textContent = opcion;
+                botonOpcion.onclick = () => guardarRespuesta(opcion);
+                opcionesDiv.appendChild(botonOpcion);
+            });
+        }
+
+        function guardarRespuesta(respuesta) {
+            respuestas.push(respuesta);
+            mostrarSiguiente();
+        }
+
+        function mostrarSiguiente() {
+            if (indicePregunta < preguntas.length - 1) {
+                indicePregunta++;
+                mostrarPregunta();
+            } else {
+                mostrarResultado();
+            }
+        }
+
+        function mostrarResultado() {
+            const quizContainer = document.getElementById("quizContainer");
+            const resultadoDiv = document.getElementById("resultado");
+            const respuestaFinal = document.getElementById("respuestaFinal");
+            const imagenRaqueta = document.getElementById("imagenRaqueta");
+            const mensajeResultado = document.getElementById("mensajeResultado");
+            const premioContainer = document.getElementById("premioContainer");
+
+            quizContainer.style.display = "none"; // Oculta el cuestionario
+            resultadoDiv.style.display = "block"; // Muestra el resultado
+
+            let resultadoTexto = "";
+            respuestas.forEach((respuesta, index) => {
+                resultadoTexto += `${index + 1}) ${preguntas[index].texto}\nRespuesta: ${respuesta}\n\n`;
+            });
+
+            premioContainer.classList.remove("hidden");
+                mensajeResultado.textContent = "¡Felicitaciones, acaba de ganarse una chance para el sorteo!";
+                mensajeResultado.classList.remove("hidden");
+
+            respuestaFinal.textContent = resultadoTexto;
+        }
+
+        function mostrarSorteo() {
+            const sorteoContainer = document.getElementById("sorteoContainer");
+            const sorteoImagen = document.getElementById("sorteoImagen");
+            const mensajeResultado = document.getElementById("mensajeResultado");
+            sorteoContainer.classList.remove("hidden");
+
+            let indice = 0;
+            sorteoInterval = setInterval(() => {
+                sorteoImagen.src = imagenesSorteo[indice];
+                indice = (indice + 1) % imagenesSorteo.length;
+            }, 200);
+
+            setTimeout(() => {
+                clearInterval(sorteoInterval);
+                sorteoImagen.src = "babolat.jpg";
+                // Actualizar el texto después de finalizar el sorteo
+                mensajeResultado.textContent = "¡Felicitaciones, acaba de ganarse una raqueta Babolat!";
+            }, 3000); // Termina en 3 segundos
+        }
+
+        // Inicializar el cuestionario
+        mostrarPregunta();
+    </script>
+</body>
+</html>
